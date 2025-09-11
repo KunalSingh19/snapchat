@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Snapchat Profile Manager Auto Poster",
-  "version": "1.0",
-  "description": "Automatically checks Spotlight and Public Profile checkboxes and clicks Post to Snapchat button.",
+  "name": "Snapchat Auto Poster",
+  "version": "1.1",
+  "description": "Automatically selects profiles, checks Spotlight/Public Story/Public Profile, and posts to Snapchat.",
   "permissions": ["scripting", "activeTab"],
   "action": {
     "default_title": "Auto Post to Snapchat"

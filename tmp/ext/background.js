@@ -6,24 +6,45 @@ chrome.action.onClicked.addListener((tab) => {
 
   chrome.scripting.executeScript({
     target: { tabId: tab.id },
-    function: () => {
-      const spotlightCheckbox = document.querySelector('input#spotlight[type="checkbox"]');
-      if (spotlightCheckbox && !spotlightCheckbox.checked) {
-        spotlightCheckbox.click();
-        console.log('Checked "Post to Spotlight"');
+    function: async () => {
+      // Helper to click an element if it exists
+      function clickIfExists(selector) {
+        const el = document.querySelector(selector);
+        if (el) {
+          el.click();
+          console.log(`Clicked element: ${selector}`);
+          return true;
+        } else {
+          console.log(`Element not found: ${selector}`);
+          return false;
+        }
       }
 
-      const publicProfileCheckbox = document.querySelector('input#publicProfile[type="checkbox"]');
-      if (publicProfileCheckbox && !publicProfileCheckbox.checked) {
-        publicProfileCheckbox.click();
-        console.log('Checked "Save to a Public Profile"');
+      // Click the "Post to Snapchat" button by data-testid
+      const clickedPostButton = clickIfExists('button[data-testid="app.manageBrandProfile.sideNav.posttosnapchatbutton"]');
+      if (!clickedPostButton) {
+        console.log('Post to Snapchat button not found, aborting.');
+        return;
       }
 
-      const buttons = Array.from(document.querySelectorAll('button'));
-      const postButton = buttons.find(btn => btn.textContent.trim() === 'Post to Snapchat');
-      if (postButton) {
-        postButton.click();
-        console.log('Clicked "Post to Snapchat" button');
+      // Wait for the posting options panel to appear (adjust delay if needed)
+      await new Promise(r => setTimeout(r, 1500));
+
+      // IDs of checkboxes to check
+      const checkboxIds = ['spotlight', 'publicStory', 'publicProfile'];
+
+      for (const id of checkboxIds) {
+        const checkbox = document.getElementById(id);
+        if (checkbox) {
+          if (!checkbox.checked) {
+            checkbox.click();
+            console.log(`Checked checkbox with id="${id}"`);
+          } else {
+            console.log(`Checkbox with id="${id}" already checked`);
+          }
+        } else {
+          console.log(`Checkbox with id="${id}" not found`);
+        }
       }
     }
   });

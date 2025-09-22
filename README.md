@@ -42,14 +42,14 @@ The server exposes two main endpoints for managing Instagram reel URLs. Below ar
 
    **cURL Example**:
    ```
-   curl -X POST http://localhost:3000/add-reel \
+   curl -X POST http://localhost:3000/history \
      -H "Content-Type: application/json" \
      -d '{"url": "https://www.instagram.com/reel/ABC123/"}'
    ```
 
    **JavaScript Fetch Example**:
    ```javascript
-   fetch('http://localhost:3000/add-reel', {
+   fetch('http://localhost:3000/history', {
      method: 'POST',
      headers: {
        'Content-Type': 'application/json',

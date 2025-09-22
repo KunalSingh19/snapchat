@@ -80,6 +80,35 @@ app.get('/get-next-reel', async (req, res) => {
   }
 });
 
+// New POST method to add URLs to history.txt
+app.post('/history', async (req, res) => {
+  try {
+    const { urls } = req.body;
+
+    if (!urls) {
+      return res.status(400).json({ success: false, message: 'No URLs provided' });
+    }
+
+    // Support both single string or array of strings
+    const urlsToAdd = Array.isArray(urls) ? urls : [urls];
+
+    // Validate URLs (basic check)
+    const invalidUrls = urlsToAdd.filter(u => typeof u !== 'string' || u.trim() === '');
+    if (invalidUrls.length > 0) {
+      return res.status(400).json({ success: false, message: 'Invalid URLs in request' });
+    }
+
+    // Append URLs to history file, each on a new line
+    const dataToAppend = urlsToAdd.map(u => u.trim()).join('\n') + '\n';
+    await fs.appendFile(historyFile, dataToAppend, 'utf-8');
+
+    res.json({ success: true, message: 'URLs added to history' });
+  } catch (error) {
+    console.error('Error adding to history:', error);
+    res.status(500).json({ success: false, error: error.message || 'Internal server error' });
+  }
+});
+
 async function startServer() {
   await initializeFiles();
   app.listen(PORT, () => {

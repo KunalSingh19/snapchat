@@ -33,8 +33,8 @@ async function initializeFiles() {
   }
 }
 
-// Modified to pop from the end (last URL)
-async function popNextUrl() {
+// New function to get last URL without removing it
+async function getLastUrl() {
   const content = await fs.readFile(reelsFile, 'utf-8');
   const urls = content.split('\n').map(line => line.trim()).filter(Boolean);
 
@@ -42,30 +42,25 @@ async function popNextUrl() {
     return null;
   }
 
-  // Take the last URL instead of the first
-  const nextUrl = urls.pop();
-  await fs.writeFile(reelsFile, urls.join('\n'), 'utf-8');
-
-  return nextUrl;
+  return urls[urls.length - 1]; // last URL without removing
 }
 
 app.get('/get-next-reel', async (req, res) => {
   try {
-    let url;
-    while (true) {
-      url = await popNextUrl();
-      if (url === null) {
-        return res.json({ success: false, message: 'No more URLs to process' });
-      }
+    const url = await getLastUrl();
 
-      try {
-        const data = await instagramGetUrl(url);
-        // No automatic history append here
-        return res.json({ success: true, url, data });
-      } catch (fetchError) {
-        await fs.appendFile(invalidFile, url + '\n');
-        console.error('Invalid URL:', url, fetchError.message);
-      }
+    if (url === null) {
+      return res.json({ success: false, message: 'No URLs to process' });
+    }
+
+    try {
+      const data = await instagramGetUrl(url);
+      // No removal or history append here
+      return res.json({ success: true, url, data });
+    } catch (fetchError) {
+      await fs.appendFile(invalidFile, url + '\n');
+      console.error('Invalid URL:', url, fetchError.message);
+      return res.status(400).json({ success: false, message: 'Invalid URL', error: fetchError.message });
     }
   } catch (error) {
     console.error('Error:', error);

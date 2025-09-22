@@ -1,0 +1,24 @@
+{
+  "manifest_version": 3,
+  "name": "Inject Button Extension",
+  "version": "1.0",
+  "description": "Injects a button at the top center of the page to automate reel posting (for testing only)",
+  "permissions": ["scripting", "activeTab", "notifications"],
+  "host_permissions": ["https://profile.snapchat.com/*", "http://localhost:3000/*"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "Inject Button"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://profile.snapchat.com/*"],
+      "js": ["content-script.js"],
+      "run_at": "document_end"
+    }
+  ],
+  "icons": {
+    "16": "icon.png"
+  }
+}

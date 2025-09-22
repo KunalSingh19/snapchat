@@ -32,7 +32,7 @@ The server exposes two main endpoints for managing Instagram reel URLs. Below ar
      .catch(error => console.error('Fetch error:', error));
    ```
 
-#### 2. POST `/add-reel`
+#### 2. POST `/history`
    - **Purpose**: Adds a new Instagram reel URL to the end of `reels.txt` for processing. Requires a JSON body with a `url` field.
    - **Request Body**: `{ "url": "https://www.instagram.com/reel/ABC123/" }`
    - **Response Format**:

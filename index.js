@@ -33,21 +33,45 @@ async function initializeFiles() {
   }
 }
 
-// New function to get last URL without removing it
-async function getLastUrl() {
-  const content = await fs.readFile(reelsFile, 'utf-8');
-  const urls = content.split('\n').map(line => line.trim()).filter(Boolean);
+// Helper to read URLs from a file into a Set for fast lookup
+async function readUrlsSet(filePath) {
+  try {
+    const content = await fs.readFile(filePath, 'utf-8');
+    const urls = content.split('\n').map(line => line.trim()).filter(Boolean);
+    return new Set(urls);
+  } catch (err) {
+    // If file doesn't exist or error, return empty set
+    return new Set();
+  }
+}
 
-  if (urls.length === 0) {
+// Get last URL from reels.txt that is NOT in history.txt or invalid.txt
+async function getNextValidUrl() {
+  const reelsContent = await fs.readFile(reelsFile, 'utf-8');
+  const reelsUrls = reelsContent.split('\n').map(line => line.trim()).filter(Boolean);
+
+  if (reelsUrls.length === 0) {
     return null;
   }
 
-  return urls[urls.length - 1]; // last URL without removing
+  const historySet = await readUrlsSet(historyFile);
+  const invalidSet = await readUrlsSet(invalidFile);
+
+  // Iterate from the end to the start to find the last URL not in history or invalid
+  for (let i = reelsUrls.length - 1; i >= 0; i--) {
+    const url = reelsUrls[i];
+    if (!historySet.has(url) && !invalidSet.has(url)) {
+      return url;
+    }
+  }
+
+  // No valid URL found
+  return null;
 }
 
 app.get('/get-next-reel', async (req, res) => {
   try {
-    const url = await getLastUrl();
+    const url = await getNextValidUrl();
 
     if (url === null) {
       return res.json({ success: false, message: 'No URLs to process' });
@@ -55,9 +79,9 @@ app.get('/get-next-reel', async (req, res) => {
 
     try {
       const data = await instagramGetUrl(url);
-      // No removal or history append here
       return res.json({ success: true, url, data });
     } catch (fetchError) {
+      // Append invalid URL to invalid.txt to skip next time
       await fs.appendFile(invalidFile, url + '\n');
       console.error('Invalid URL:', url, fetchError.message);
       return res.status(400).json({ success: false, message: 'Invalid URL', error: fetchError.message });
